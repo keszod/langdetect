@@ -57,9 +57,7 @@ def create_driver(headless=True):
 	return driver
 
 
-driver = create_driver()
-
-def get_page(url):
+def get_page(url,driver):
 	driver.get(url)
 	test(driver.page_source,'test.html')
 
@@ -73,7 +71,7 @@ def csv_pack(name,params,mode='a+'):
 		writer.writerow(params)
 
 
-def analysis(site):
+def analysis(site,driver):
 	driver.get('https://'+site)
 	sleep(10)
 	if len(driver.page_source) < 1000:
@@ -83,15 +81,24 @@ def analysis(site):
 	return lang
 
 def parse():
+	driver = create_driver()
+
 	with open('sites.txt','r') as file:
 		sites = file.read().splitlines()
 
+	count = 0
 	for site in sites:
 		print(site)
+		if count == 15:
+			count = 0
+			driver.close()
+			driver = create_driver()
+
 		while True:
 			try:
-				lang = analysis(site)
+				lang = analysis(site,driver)
 				csv_pack('result',[site,lang])
+				count+=1
 				break
 			except:
 				continue
